@@ -32,9 +32,9 @@ int inicializaRotor(int rotor[], int tamChave, char chave[], int s[]){
     return s;
 }
 
-int cifraBit(int c, int rotores[], int rotorIndex){
-    int x;
-    x = c + rotores[rotorIndex] % 256;
+unsigned char cifraBit(unsigned char c, int rotores, int rotorIndex){
+    unsigned char x;
+    x = c + rotores % 256;
     return x;
 }
 
@@ -93,13 +93,17 @@ int main(int argc, char *argv[]){
     //Abre o arquivo txt contendo o texto claro
     FILE *entrada;
     entrada = fopen(argv[argc-2], "rb");
-    
-    //Lê cada bit do texto claro
 
+    //Criar o arquivo de saida
+    FILE *saida;
+    saida = fopen(argv[argc-1], "wb");
+
+    //Lê cada bit do texto claro e cifra ele
     int rotorIndex = 0;
 
-    int c;
-    int x;
+    unsigned char c;
+    unsigned char x;
+   
     while(1){
         c = fgetc(entrada);
         if(feof(entrada)){
@@ -107,10 +111,13 @@ int main(int argc, char *argv[]){
         }
         printf("NÃO CIFRADO: %d\n", c);
         if(modo == 'C'){
-            x = cifraBit(c, rotores[0], rotorIndex);
+            x = cifraBit(c, rotores[0][rotorIndex], rotorIndex);
+            unsigned char *p = &x;
+            fwrite(p, 1, 1, saida);
+            
             printf("CIFRADO: %d\n", x);
         }
-        rotorIndex++;
+        rotorIndex = rotorIndex + 1;
     }
 
 
