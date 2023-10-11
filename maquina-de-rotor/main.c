@@ -5,10 +5,9 @@
 #include <string.h>
 
 
-void inicializaRotor(int rotor[], int tamChave, char chave[]){
+int inicializaRotor(int rotor[], int tamChave, char chave[], int s[]){
 
     //Inicializa vetor S -> vetor de 256 inteiros
-    int s[256];
     for(int i=0; i<256; i++){
         s[i] = i;
     }
@@ -22,18 +21,28 @@ void inicializaRotor(int rotor[], int tamChave, char chave[]){
         s[j] = temp;
     }
 
-    for (int i = 0; i < 256; i++) {
-        rotor[i] = s[i];
+    //Imprime o vetor s
+    for(int i=0; i<256; i++){
+        printf("%d ", s[i]);
+        if(i%16 == 0 && i != 0){
+            printf("\n");
+        }
     }
 
+    return s;
+}
 
+int cifraBit(int c, int rotores[], int rotorIndex){
+    int x;
+    x = c + rotores[rotorIndex] % 256;
+    return x;
 }
 
 
 int main(int argc, char *argv[]){
 
     //Lê o modo(cifragem ou decifragem)
-    char modo = argv[1][0];
+    int modo = argv[1][0];
     
     //Lê a quantidade de rotores
     int qtdRotor = atoi(argv[2]); //Função atoi converte uma string de um argumento em um inteiro
@@ -47,6 +56,8 @@ int main(int argc, char *argv[]){
     //Cria array de rotores com base na quantidade de rotores, cada um com tamanho de 256 inteiros
     int rotores[qtdRotor][256];
 
+    int s[256];
+
     //Lê a chave e inicializa cada rotor 
     for(int i=0; i<qtdRotor; i++){
         //Lê a chave do usuário
@@ -54,9 +65,54 @@ int main(int argc, char *argv[]){
         char chave[tamChave];
         strcpy(chave, argv[3]);
 
-        inicializaRotor(rotores[i], tamChave, chave);
+        inicializaRotor(rotores[i], tamChave, chave, s);
+
+        for(int j=0; j<256; j++){
+            rotores[i][j] = s[j];
+        }
     }
+
+    printf("\n--------------\n");
+    for(int i=0; i<256; i++){
+        printf("%d ", rotores[0][i]);
+        if(i%16 == 0 && i != 0){
+            printf("\n");
+        }
+    }
+
+    //Variaveis para controlar o deslocamento dos rotores
+    int k[qtdRotor]; //A cada quantos símboloso os rotores se movem
+    int l[qtdRotor]; //Quantas posições os rotores se movem
    
+   //Lê e armazena nos vetores o k e l lido da linha de comando
+    for(int i=0; i<qtdRotor; i++){
+        k[i] = atoi(argv[3+qtdRotor+i]);
+        l[i] = atoi(argv[3+(2*qtdRotor)+i]);
+    }
+
+    //Abre o arquivo txt contendo o texto claro
+    FILE *entrada;
+    entrada = fopen(argv[argc-2], "rb");
+    
+    //Lê cada bit do texto claro
+
+    int rotorIndex = 0;
+
+    int c;
+    int x;
+    while(1){
+        c = fgetc(entrada);
+        if(feof(entrada)){
+            break;
+        }
+        printf("NÃO CIFRADO: %d\n", c);
+        if(modo == 'C'){
+            x = cifraBit(c, rotores[0], rotorIndex);
+            printf("CIFRADO: %d\n", x);
+        }
+        rotorIndex++;
+    }
+
 
     return 0;
 }
